@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:flutter_toon/models/webtoon_model.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -5,12 +8,19 @@ class ApiService {
   final String today = "today";
   final String em = "";
 
-  void getTodaysToons() async {
+  Future<List<WebtoonModel>> getTodaysToons() async {
+    List<WebtoonModel> webtoonInstances = [];
     final url = Uri.parse("$baseUrl/$today");
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      print(response.body);
-      return;
+      final List<dynamic> webtoons = jsonDecode(response.body);
+      for (var webtoon in webtoons) {
+        // final toon = WebtoonModel.fromJson(webtoon);
+        webtoonInstances.add(WebtoonModel.fromJson(webtoon));
+        // print(toon);
+        // print(webtoon);
+      }
+      return webtoonInstances;
     }
     throw Error(); // error 발생시키기
   }
