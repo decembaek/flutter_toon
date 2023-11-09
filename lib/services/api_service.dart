@@ -8,6 +8,7 @@ class ApiService {
   final String today = "today";
   final String em = "";
 
+  // async awaite 는 future 해야함
   Future<List<WebtoonModel>> getTodaysToons() async {
     List<WebtoonModel> webtoonInstances = [];
     final url = Uri.parse("$baseUrl/$today");
