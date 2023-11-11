@@ -3,7 +3,7 @@ import 'package:flutter_toon/screens/home_screen.dart';
 import 'package:flutter_toon/services/api_service.dart';
 
 void main() {
-  ApiService().getTodaysToons();
+  // ApiService().getTodaysToons();
   runApp(const MyApp());
 }
 
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       home: HomeScreen(),
     );
   }
