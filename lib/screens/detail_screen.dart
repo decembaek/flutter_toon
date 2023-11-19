@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_toon/models/webtoon_detail_model.dart';
 import 'package:flutter_toon/models/webtoon_episode_model.dart';
 import 'package:flutter_toon/services/api_service.dart';
+import 'package:flutter_toon/widgets/episode_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailScreen extends StatefulWidget {
   final String title, thumb, id;
@@ -21,12 +23,45 @@ class _DetailScreenState extends State<DetailScreen> {
   // Future<WebtoonDetailModel> webtoon = ApiService.getToonById(widget.id);
   late Future<WebtoonDetailModel> webtoon;
   late Future<List<WebtoonEpisodeModel>> episodes;
+  late SharedPreferences prefs;
+
+  bool isLiked = false;
+
+  Future initPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+    final likedToons = prefs.getStringList("likedToons");
+    if (likedToons != null) {
+      if (likedToons.contains(widget.id) == true) {
+        setState(() {
+          isLiked = true;
+        });
+      }
+    } else {
+      await prefs.setStringList("likedToons", []);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     webtoon = ApiService.getToonById(widget.id);
     episodes = ApiService.getLatestEpisodesById(widget.id);
+    initPrefs();
+  }
+
+  onHeartTap() async {
+    final likedToons = prefs.getStringList("likedToons");
+    if (likedToons != null) {
+      if (isLiked) {
+        likedToons.remove(widget.id);
+      } else {
+        likedToons.add(widget.id);
+      }
+      await prefs.setStringList("likedToons", likedToons);
+      setState(() {
+        isLiked = !isLiked;
+      });
+    }
   }
 
   @override
@@ -38,6 +73,16 @@ class _DetailScreenState extends State<DetailScreen> {
         elevation: 2,
         foregroundColor: Colors.green,
         backgroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: onHeartTap,
+            icon: Icon(
+              isLiked
+                  ? Icons.favorite_outlined
+                  : Icons.favorite_outline_outlined,
+            ),
+          ),
+        ],
         title: Text(
           widget.title,
           style: const TextStyle(
@@ -122,44 +167,9 @@ class _DetailScreenState extends State<DetailScreen> {
                   future: episodes,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return ListView.builder(
-                        shrinkWrap: true, //ListView가 Column 안에서 올바르게 동작하도록 설정
-                        physics:
-                            const NeverScrollableScrollPhysics(), // ListView가 독립적으로 스크롤 하는것을 방지
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, index) {
-                          var episode = snapshot.data![index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.green.shade400,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 20,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    episode.title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const Icon(
-                                    Icons.chevron_right_rounded,
-                                    color: Colors.white,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                      return Episode(
+                        snapshot: snapshot,
+                        webtoonId: widget.id,
                       );
                       //Listview로도 짜보기
                       // return Column(
