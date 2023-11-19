@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_toon/screens/home_screen.dart';
-import 'package:flutter_toon/services/api_service.dart';
 
 void main() {
   // ApiService().getTodaysToons();
